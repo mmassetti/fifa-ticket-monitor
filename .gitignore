@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+
+monitor_state.json
+autobuy_state.json
+
+api_inspection_match_*.json
+api_inspection_match_*_summary.json
+
+tickets_found_*.png
+image.png
