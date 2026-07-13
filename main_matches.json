@@ -1,0 +1,16 @@
+[
+  {
+    "match_id": "target",
+    "name": "Target match - Atlanta Stadium",
+    "performance_id": "10229226725358",
+    "url": "https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725358/table/1/lang/en",
+    "categories": [
+      "Category 3",
+      "Category 4",
+      "Obstructed View Category"
+    ],
+    "max_price": 2000,
+    "auto_buy": false,
+    "auto_cart": true
+  }
+]
