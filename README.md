@@ -87,6 +87,26 @@ Start only the Chrome debug profile:
 ./start_main_chrome.sh
 ```
 
+
+Refresh the shop timer by adding one currently available ticket to the cart:
+
+```bash
+python3 refresh_queue_timer.py
+```
+
+Prefer a normal category if available:
+
+```bash
+python3 refresh_queue_timer.py --category 1
+```
+
+Require an exact label:
+
+```bash
+python3 refresh_queue_timer.py --label "Obstructed View Category 1"
+```
+
+
 ## Notes
 
 - Keep Chrome open while monitoring.
