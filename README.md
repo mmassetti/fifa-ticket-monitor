@@ -24,6 +24,7 @@ https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/
   - `Obstructed View Category`
 - Attempts to add 1 matching cheap ticket to the cart when availability appears.
 - Plays a local alarm when availability is detected.
+- Keeps the shop timer alive by opportunistically adding one available ticket to the cart when no watched cheap category is available.
 
 It does **not** bypass captcha, login, queue, payment, checkout, or FIFA account verification.
 
@@ -79,6 +80,18 @@ Run every 30 seconds:
 
 ```bash
 python3 main_ticket_monitor.py --interval 30
+```
+
+Run with a custom cart-refresh interval:
+
+```bash
+python3 main_ticket_monitor.py --interval 30 --refresh-cart-interval 240
+```
+
+Disable automatic cart refresh:
+
+```bash
+python3 main_ticket_monitor.py --no-refresh-cart
 ```
 
 Start only the Chrome debug profile:

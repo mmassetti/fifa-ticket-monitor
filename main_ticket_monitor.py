@@ -29,6 +29,7 @@ CDP_BASE = os.environ.get("FIFA_CDP_BASE", "http://127.0.0.1:9222")
 MATCHES_FILE = "main_matches.json"
 STATE_FILE = "main_ticket_monitor_state.json"
 DEFAULT_INTERVAL_SECONDS = 30
+DEFAULT_REFRESH_CART_SECONDS = 240
 
 
 class CdpTab:
@@ -509,6 +510,69 @@ def try_auto_cart(match, result):
     return False, attempts
 
 
+REFRESH_CART_PRIORITY = [
+    "Category 2",
+    "Category 1",
+    "Obstructed View Category 1",
+    "Obstructed View Category 2",
+    "Obstructed View Category 3",
+    "Category 3",
+    "Category 4",
+]
+
+
+def is_accessibility_category(category):
+    label = (category.get("label") or "").lower()
+    return "easy access" in label or "wheelchair" in label
+
+
+def refresh_cart_priority(category):
+    label = category.get("label") or ""
+    try:
+        priority = REFRESH_CART_PRIORITY.index(label)
+    except ValueError:
+        priority = 999
+    price = category.get("price")
+    return (priority, price if price is not None else 999999, label)
+
+
+def choose_refresh_category(categories):
+    available = [
+        category for category in categories
+        if category.get("available") and not is_accessibility_category(category)
+    ]
+    return sorted(available, key=refresh_cart_priority)[0] if available else None
+
+
+def should_attempt_cart_refresh(match, previous, args, result):
+    if args.no_refresh_cart:
+        return False
+    if not match.get("refresh_cart", True):
+        return False
+    if not result.get("ok"):
+        return False
+    if result.get("available"):
+        return False
+
+    last_attempt = float(previous.get("refresh_cart_last_attempt_epoch") or 0)
+    return time.time() - last_attempt >= args.refresh_cart_interval
+
+
+def try_refresh_cart(match, result):
+    category = choose_refresh_category(result.get("categories", []))
+    if not category:
+        print("  REFRESH-CART: no selectable available ticket found")
+        return {"ok": False, "reason": "no_available_ticket"}
+
+    print(f"  REFRESH-CART: trying {category.get('label')} ${category.get('price')} qty 1")
+    attempt = add_ticket_to_cart(match, category)
+    if attempt.get("ok"):
+        print(f"  REFRESH-CART: added {category.get('label')} to cart")
+    else:
+        print(f"  REFRESH-CART: failed {category.get('label')} -> {attempt.get('reason')}")
+    return attempt
+
+
 def summarize_categories(categories):
     if not categories:
         return "no category rows found"
@@ -607,6 +671,13 @@ def parse_args():
     parser.add_argument("--matches", default=MATCHES_FILE)
     parser.add_argument("--match", default=None, help="Only monitor one match_id")
     parser.add_argument("--interval", type=int, default=DEFAULT_INTERVAL_SECONDS)
+    parser.add_argument(
+        "--refresh-cart-interval",
+        type=int,
+        default=DEFAULT_REFRESH_CART_SECONDS,
+        help="Seconds between opportunistic cart-refresh attempts. Set 0 with --no-refresh-cart to disable.",
+    )
+    parser.add_argument("--no-refresh-cart", action="store_true")
     parser.add_argument("--once", action="store_true")
     return parser.parse_args()
 
@@ -647,6 +718,8 @@ def main():
                 "health": result["health"],
                 "checked_at": result["checked_at"],
                 "matches": result["matches"],
+                "refresh_cart_last_attempt_epoch": previous.get("refresh_cart_last_attempt_epoch"),
+                "refresh_cart_last_result": previous.get("refresh_cart_last_result"),
             }
             write_json(STATE_FILE, state)
 
@@ -658,6 +731,11 @@ def main():
                     state[match["match_id"]]["cart_ok"] = cart_ok
                     write_json(STATE_FILE, state)
                 play_alarm()
+            elif should_attempt_cart_refresh(match, previous, args, result):
+                refresh_result = try_refresh_cart(match, result)
+                state[match["match_id"]]["refresh_cart_last_attempt_epoch"] = time.time()
+                state[match["match_id"]]["refresh_cart_last_result"] = refresh_result
+                write_json(STATE_FILE, state)
 
         if args.once:
             return

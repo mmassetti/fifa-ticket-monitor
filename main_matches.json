@@ -11,6 +11,7 @@
     ],
     "max_price": 2000,
     "auto_buy": false,
-    "auto_cart": true
+    "auto_cart": true,
+    "refresh_cart": true
   }
 ]

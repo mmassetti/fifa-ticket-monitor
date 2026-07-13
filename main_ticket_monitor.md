@@ -46,13 +46,15 @@ The monitor reads `main_matches.json`, extracts category rows from the live page
 
 ## Refresh queue timer
 
-If the shop warns that the purchase window is about to expire, you can manually add one normal Category 2 ticket to the cart to refresh the timer:
+The main monitor now attempts an automatic cart refresh every 240 seconds by default. It only does this when the page is ready, no watched cheap category is currently available, and at least one non-accessibility ticket row is selectable. If no ticket is available for refresh, it logs that and keeps monitoring.
+
+Manual refresh is still available:
 
 ```bash
 python3 refresh_queue_timer.py
 ```
 
-This does not checkout or pay. Remove the ticket from the cart afterwards if you do not want it.
+Neither flow checks out or pays.
 
 ## Network/API capture
 
