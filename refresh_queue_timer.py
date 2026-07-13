@@ -1,48 +1,32 @@
-"""Refresh the FIFA shop queue timer by adding one available ticket to cart.
+"""Refresh the FIFA shop queue timer by adding and removing one available ticket.
 
-This is a manual helper. It does not checkout or pay. By default it chooses any
-available non-accessibility row, because FIFA availability can move between
-categories while the queue timer keeps counting down.
+This is a manual helper. It does not checkout or pay. It selects one available
+non-accessibility row, adds it to the cart, removes it, and returns to the match
+page so monitoring can continue cleanly.
 """
 
 import argparse
 import json
-import re
-import time
 
 import main_ticket_monitor as monitor
 
 
-DEFAULT_PRIORITY = [
-    "Category 2",
-    "Category 1",
-    "Obstructed View Category 1",
-    "Obstructed View Category 2",
-    "Obstructed View Category 3",
-    "Category 3",
-    "Category 4",
-]
-
-
-def is_accessibility(category):
-    label = (category.get("label") or "").lower()
-    return "easy access" in label or "wheelchair" in label
-
-
-def category_sort_key(category):
-    label = category.get("label") or ""
-    try:
-        priority = DEFAULT_PRIORITY.index(label)
-    except ValueError:
-        priority = 999
-    price = category.get("price")
-    return (priority, price if price is not None else 999999, label)
+def summarize_available(categories):
+    rows = []
+    for category in sorted(categories, key=monitor.refresh_cart_priority):
+        if not category.get("available"):
+            continue
+        if monitor.is_accessibility_category(category):
+            continue
+        price = f"${category['price']:,.2f}" if category.get("price") is not None else "no price"
+        rows.append(f"{category.get('label')} {price} qty {category.get('maxQuantity')}")
+    return rows
 
 
 def choose_category(categories, requested_category=None, requested_label=None):
     available = [
         category for category in categories
-        if category.get("available") and not is_accessibility(category)
+        if category.get("available") and not monitor.is_accessibility_category(category)
     ]
 
     if requested_label:
@@ -59,19 +43,7 @@ def choose_category(categories, requested_category=None, requested_label=None):
         if normal_matches:
             return normal_matches[0]
 
-    return sorted(available, key=category_sort_key)[0] if available else None
-
-
-def summarize_available(categories):
-    rows = []
-    for category in sorted(categories, key=category_sort_key):
-        if not category.get("available"):
-            continue
-        if is_accessibility(category):
-            continue
-        price = f"${category['price']:,.2f}" if category.get("price") is not None else "no price"
-        rows.append(f"{category.get('label')} {price} qty {category.get('maxQuantity')}")
-    return rows
+    return monitor.choose_refresh_category(categories)
 
 
 def main():
@@ -119,33 +91,14 @@ def main():
             "price": category.get("price"),
             "maxQuantity": category.get("maxQuantity"),
         }, indent=2))
-
-        selected = monitor.select_category_quantity(tab, category)
-        print("select_result=")
-        print(json.dumps(selected, indent=2))
-        if not selected or not selected.get("ok"):
-            raise SystemExit("Could not select ticket quantity")
-
-        time.sleep(2)
-        clicked = monitor.click_add_to_cart(tab)
-        print("click_result=")
-        print(json.dumps(clicked, indent=2))
-        if not clicked or not clicked.get("ok"):
-            raise SystemExit("Could not click Add to cart")
-
-        time.sleep(5)
-        final_state = monitor.read_page_state(tab)
-        body = final_state.get("text") or ""
-        excerpt = re.sub(r"\s+", " ", body)[:1600]
-        print("final_state=")
-        print(json.dumps({
-            "url": final_state.get("url"),
-            "title": final_state.get("title"),
-            "cart": "shopping cart" in body.lower() or "/cart/" in (final_state.get("url") or "").lower(),
-            "body_excerpt": excerpt,
-        }, indent=2))
     finally:
         tab.close()
+
+    result = monitor.refresh_ticket_in_cart(match, category)
+    print("refresh_result=")
+    print(json.dumps(result, indent=2))
+    if not result.get("ok"):
+        raise SystemExit("Could not complete add/remove/return refresh")
 
 
 if __name__ == "__main__":

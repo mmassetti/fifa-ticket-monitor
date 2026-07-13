@@ -46,7 +46,7 @@ The monitor reads `main_matches.json`, extracts category rows from the live page
 
 ## Refresh queue timer
 
-The main monitor now attempts an automatic cart refresh every 240 seconds by default. It only does this when the page is ready, no watched cheap category is currently available, and at least one non-accessibility ticket row is selectable. If no ticket is available for refresh, it logs that and keeps monitoring.
+The main monitor now attempts an automatic cart refresh every 240 seconds by default. It only does this when the page is ready, no watched cheap category is currently available, and at least one non-accessibility ticket row is selectable. The refresh flow adds one ticket to the cart, removes it, and returns to the match page. If no ticket is available for refresh, it logs that and keeps monitoring.
 
 Manual refresh is still available:
 

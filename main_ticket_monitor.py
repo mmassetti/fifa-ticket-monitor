@@ -497,6 +497,177 @@ def add_ticket_to_cart(match, category):
         tab.close()
 
 
+def cart_state(tab):
+    state = read_page_state(tab)
+    text = state.get("text") or ""
+    url = state.get("url") or ""
+    lower_text = text.lower()
+    return {
+        "url": url,
+        "title": state.get("title") or "",
+        "in_cart": "/cart/" in url.lower() or "your shopping cart" in lower_text,
+        "empty": "shopping cart is empty" in lower_text or "your shopping cart is empty" in lower_text,
+    }
+
+
+def click_cart_remove_button(tab):
+    return tab.evaluate(
+        r"""
+        (() => {
+          const normalize = (value) => (value || "").replace(/\s+/g, " ").trim();
+          const isVisible = (node) => {
+            const rect = node.getBoundingClientRect();
+            const style = window.getComputedStyle(node);
+            return rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none";
+          };
+          const controls = [...document.querySelectorAll("button, a, input[type='button'], input[type='submit']")];
+          const candidates = controls
+            .map((node) => ({
+              node,
+              text: normalize([
+                node.innerText,
+                node.textContent,
+                node.value,
+                node.getAttribute("aria-label"),
+                node.getAttribute("title"),
+                node.id,
+                node.className
+              ].filter(Boolean).join(" "))
+            }))
+            .filter(({ node, text }) =>
+              text &&
+              isVisible(node) &&
+              !node.disabled &&
+              node.getAttribute("aria-disabled") !== "true" &&
+              /(remove|delete|trash|discard|quitar|eliminar|supprimer|löschen)/i.test(text) &&
+              !/(cookie|privacy|preference)/i.test(text)
+            );
+          const candidate = candidates[0];
+          if (!candidate) {
+            return {
+              ok: false,
+              reason: "remove_button_not_found",
+              visibleControls: controls.map((node) => normalize(node.innerText || node.textContent || node.value || node.getAttribute("aria-label") || "")).filter(Boolean).slice(0, 40)
+            };
+          }
+          candidate.node.scrollIntoView({ block: "center", inline: "center" });
+          candidate.node.click();
+          return { ok: true, text: candidate.text };
+        })()
+        """,
+        timeout=10,
+    ) or {"ok": False, "reason": "no_eval_result"}
+
+
+def click_cart_confirm_button(tab):
+    return tab.evaluate(
+        r"""
+        (() => {
+          const normalize = (value) => (value || "").replace(/\s+/g, " ").trim();
+          const isVisible = (node) => {
+            const rect = node.getBoundingClientRect();
+            const style = window.getComputedStyle(node);
+            return rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none";
+          };
+          const controls = [...document.querySelectorAll("button, a, input[type='button'], input[type='submit']")];
+          const candidate = controls.find((node) => {
+            const text = normalize(node.innerText || node.textContent || node.value || node.getAttribute("aria-label") || "");
+            return isVisible(node) && !node.disabled && /^(remove|delete|yes|confirm|ok|eliminar|quitar|sí|si)$/i.test(text);
+          });
+          if (!candidate) return { ok: false, reason: "confirm_button_not_found" };
+          candidate.click();
+          return { ok: true, text: normalize(candidate.innerText || candidate.textContent || candidate.value || "") };
+        })()
+        """,
+        timeout=10,
+    ) or {"ok": False, "reason": "no_eval_result"}
+
+
+def remove_cart_items(tab):
+    attempts = []
+    for _ in range(4):
+        state = cart_state(tab)
+        if state["in_cart"] and state["empty"]:
+            return {"ok": True, "reason": "cart_empty", "attempts": attempts, "state": state}
+
+        clicked = click_cart_remove_button(tab)
+        attempts.append({"remove": clicked})
+        if not clicked.get("ok"):
+            return {"ok": False, "reason": clicked.get("reason", "remove_failed"), "attempts": attempts, "state": state}
+
+        time.sleep(1)
+        confirm = click_cart_confirm_button(tab)
+        attempts[-1]["confirm"] = confirm
+        time.sleep(2)
+
+        state = cart_state(tab)
+        if state["empty"]:
+            return {"ok": True, "reason": "cart_empty", "attempts": attempts, "state": state}
+
+    return {"ok": False, "reason": "cart_not_empty_after_remove_attempts", "attempts": attempts, "state": cart_state(tab)}
+
+
+def refresh_ticket_in_cart(match, category):
+    target = find_or_open_target(match)
+    tab = CdpTab(target["webSocketDebuggerUrl"])
+    try:
+        state = read_page_state(tab)
+        current_url = state.get("url") or ""
+        target_performance_id = extract_performance_id(match["url"])
+        if target_performance_id and target_performance_id not in current_url:
+            navigate(tab, match["url"])
+            time.sleep(3)
+            state = read_page_state(tab)
+
+        ok, health = page_health(state)
+        if not ok:
+            return {"ok": False, "reason": health, "url": state.get("url") or ""}
+
+        selected = select_category_quantity(tab, category)
+        if not selected.get("ok"):
+            return {"ok": False, "reason": selected.get("reason", "select_failed"), "select": selected}
+
+        time.sleep(0.8)
+        clicked = click_add_to_cart(tab)
+        if not clicked.get("ok"):
+            return {"ok": False, "reason": clicked.get("reason", "click_failed"), "select": selected, "click": clicked}
+
+        time.sleep(5)
+        added_state = cart_state(tab)
+        if not added_state["in_cart"] or added_state["empty"]:
+            navigate(tab, match["url"])
+            time.sleep(2)
+            return {
+                "ok": False,
+                "reason": "cart_not_confirmed",
+                "category": category.get("label"),
+                "price": category.get("price"),
+                "select": selected,
+                "click": clicked,
+                "cart_state": added_state,
+                "returned_url": read_page_state(tab).get("url") or "",
+            }
+
+        removed = remove_cart_items(tab)
+        navigate(tab, match["url"])
+        time.sleep(3)
+        return_state = read_page_state(tab)
+
+        return {
+            "ok": bool(removed.get("ok")),
+            "reason": "cart_refreshed_and_returned" if removed.get("ok") else removed.get("reason", "remove_failed"),
+            "category": category.get("label"),
+            "price": category.get("price"),
+            "select": selected,
+            "click": clicked,
+            "cart_state": added_state,
+            "remove": removed,
+            "returned_url": return_state.get("url") or "",
+        }
+    finally:
+        tab.close()
+
+
 def try_auto_cart(match, result):
     attempts = []
     for category in sorted_cart_candidates(result):
@@ -565,9 +736,9 @@ def try_refresh_cart(match, result):
         return {"ok": False, "reason": "no_available_ticket"}
 
     print(f"  REFRESH-CART: trying {category.get('label')} ${category.get('price')} qty 1")
-    attempt = add_ticket_to_cart(match, category)
+    attempt = refresh_ticket_in_cart(match, category)
     if attempt.get("ok"):
-        print(f"  REFRESH-CART: added {category.get('label')} to cart")
+        print(f"  REFRESH-CART: added, removed, and returned from {category.get('label')}")
     else:
         print(f"  REFRESH-CART: failed {category.get('label')} -> {attempt.get('reason')}")
     return attempt

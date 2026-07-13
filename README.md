@@ -24,7 +24,7 @@ https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/
   - `Obstructed View Category`
 - Attempts to add 1 matching cheap ticket to the cart when availability appears.
 - Plays a local alarm when availability is detected.
-- Keeps the shop timer alive by opportunistically adding one available ticket to the cart when no watched cheap category is available.
+- Keeps the shop timer alive by opportunistically adding one available ticket to the cart, removing it, and returning to the match page when no watched cheap category is available.
 
 It does **not** bypass captcha, login, queue, payment, checkout, or FIFA account verification.
 
