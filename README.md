@@ -2,7 +2,7 @@
 
 Monitor for ordinary FIFA World Cup 2026 tickets on the official FIFA ticketing shop.
 
-This project attaches to a real Chrome session through Chrome DevTools Protocol (CDP). That means queue, captcha, login, and verification-code steps stay human-driven, while the monitor can keep watching the live match page after access is granted.
+This project attaches to a real Chrome session through Chrome DevTools Protocol (CDP). Queue, captcha, login, and verification-code steps stay human-driven; after access is granted, the monitor keeps watching the live match page from that same browser session.
 
 ## Current Target
 
@@ -17,16 +17,28 @@ https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/
 - Opens or reuses a Chrome debug profile.
 - Reads the official FIFA ticket page directly from the browser session.
 - Detects ticket category availability and prices.
-- Ignores expensive normal `Category 1` and `Category 2` tickets.
-- Watches cheap categories:
+- Ignores expensive normal `Category 1` and `Category 2` tickets for the target alert.
+- Watches cheap target categories:
   - `Category 3`
   - `Category 4`
   - `Obstructed View Category`
-- Attempts to add 1 matching cheap ticket to the cart when availability appears.
-- Plays a local alarm when availability is detected.
-- Keeps the shop timer alive by opportunistically adding one available ticket to the cart, removing it, and returning to the match page when no watched cheap category is available.
+- When a target category appears, adds 1 matching ticket to the cart and leaves it there.
+- Plays a local alarm when target availability is detected.
+- Keeps the shop timer alive by opportunistically adding one available non-accessibility ticket, removing it from the cart, and returning to the match page.
 
 It does **not** bypass captcha, login, queue, payment, checkout, or FIFA account verification.
+
+## Two Cart Flows
+
+There are two intentionally different cart behaviors:
+
+1. **Target auto-cart**
+
+   Used when a watched cheap category appears. The monitor adds 1 ticket to the cart and leaves it there so you can take over manually.
+
+2. **Refresh keepalive**
+
+   Used only when no watched cheap category is available. The monitor adds any selectable non-accessibility ticket, removes it from the cart, and navigates back to the match page. If there is no selectable ticket, it logs the miss and keeps monitoring.
 
 ## Quick Start
 
@@ -46,7 +58,7 @@ If FIFA shows queue, captcha, login, or verification, complete it manually in th
 
 ## Configuration
 
-Edit `main_matches.json` to change the target match, watched categories, max price, or auto-cart behavior.
+Edit `main_matches.json` to change the target match, watched categories, max price, auto-cart, or refresh behavior.
 
 Default rule:
 
@@ -54,17 +66,28 @@ Default rule:
 {
   "categories": ["Category 3", "Category 4", "Obstructed View Category"],
   "max_price": 2000,
-  "auto_cart": true
+  "auto_cart": true,
+  "refresh_cart": true
 }
 ```
 
-Auto-cart priority is:
+Target auto-cart priority is:
 
 1. `Category 4`
 2. `Obstructed View Category 3`
 3. `Category 3`
 4. `Obstructed View Category 2`
 5. `Obstructed View Category 1`
+
+Refresh keepalive priority is:
+
+1. `Category 2`
+2. `Category 1`
+3. `Obstructed View Category 1`
+4. `Obstructed View Category 2`
+5. `Obstructed View Category 3`
+6. `Category 3`
+7. `Category 4`
 
 Accessibility rows such as `Easy Access` and `Wheelchair` are ignored unless explicitly added to the config.
 
@@ -82,13 +105,13 @@ Run every 30 seconds:
 python3 main_ticket_monitor.py --interval 30
 ```
 
-Run with a custom cart-refresh interval:
+Run with a custom refresh interval:
 
 ```bash
 python3 main_ticket_monitor.py --interval 30 --refresh-cart-interval 240
 ```
 
-Disable automatic cart refresh:
+Disable automatic refresh keepalive:
 
 ```bash
 python3 main_ticket_monitor.py --no-refresh-cart
@@ -100,8 +123,7 @@ Start only the Chrome debug profile:
 ./start_main_chrome.sh
 ```
 
-
-Refresh the shop timer by adding one currently available ticket to the cart:
+Run the manual refresh helper once:
 
 ```bash
 python3 refresh_queue_timer.py
@@ -119,10 +141,10 @@ Require an exact label:
 python3 refresh_queue_timer.py --label "Obstructed View Category 1"
 ```
 
-
 ## Notes
 
 - Keep Chrome open while monitoring.
 - If the script is already running and code/config changed, restart it with `Ctrl+C` and `./run_main_monitor.sh`.
-- Auto-cart only tries to add a ticket to the cart. It does not pay or complete checkout.
+- Target auto-cart does not pay or complete checkout; it only leaves the wanted ticket in the cart.
+- Refresh keepalive does not pay or complete checkout; it adds and removes a temporary ticket.
 - See `main_ticket_monitor.md` for more detailed operational notes.
