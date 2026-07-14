@@ -24,7 +24,6 @@ https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/
   - `Obstructed View Category`
 - When a target category appears, adds 1 matching ticket to the cart and leaves it there.
 - Plays a local alarm when target availability is detected.
-- Keeps the shop timer alive by opportunistically adding one available non-accessibility ticket, opening the cart/summary if needed, clearing it, and returning to the match page.
 
 It does **not** bypass captcha, login, queue, payment, checkout, or FIFA account verification.
 
@@ -38,7 +37,7 @@ There are two intentionally different cart behaviors:
 
 2. **Refresh keepalive**
 
-   Used only when no watched cheap category is available. The monitor adds any selectable non-accessibility ticket, opens the cart/summary if needed, clears it, and navigates back to the match page. If there is no selectable ticket, it logs the miss and keeps monitoring.
+   Disabled by default for now. It can be re-enabled with `refresh_cart: true`, but this flow is more fragile because it temporarily adds a non-target ticket.
 
 ## Quick Start
 
@@ -133,7 +132,7 @@ Default rule:
   "categories": ["Category 3", "Category 4", "Obstructed View Category"],
   "max_price": 2000,
   "auto_cart": true,
-  "refresh_cart": true
+  "refresh_cart": false
 }
 ```
 
@@ -145,7 +144,7 @@ Target auto-cart priority is:
 4. `Obstructed View Category 2`
 5. `Obstructed View Category 1`
 
-Refresh keepalive priority is:
+Refresh keepalive priority, only if re-enabled, is:
 
 1. `Category 2`
 2. `Category 1`
@@ -177,7 +176,7 @@ Run with a custom refresh interval:
 python3 main_ticket_monitor.py --interval 30 --refresh-cart-interval 45
 ```
 
-Disable automatic refresh keepalive:
+Keep automatic refresh disabled:
 
 ```bash
 python3 main_ticket_monitor.py --no-refresh-cart
@@ -212,5 +211,5 @@ python3 refresh_queue_timer.py --label "Obstructed View Category 1"
 - Keep Chrome open while monitoring.
 - If the script is already running and code/config changed, restart it with `Ctrl+C` and `./run_main_monitor.sh`.
 - Target auto-cart does not pay or complete checkout; it only leaves the wanted ticket in the cart.
-- Refresh keepalive does not pay or complete checkout; it adds and removes a temporary ticket.
+- Refresh keepalive is disabled by default because it can disturb the FIFA session.
 - See `main_ticket_monitor.md` for more detailed operational notes.

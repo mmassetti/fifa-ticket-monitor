@@ -823,7 +823,7 @@ def choose_refresh_category(categories):
 def should_attempt_cart_refresh(match, previous, args, result):
     if args.no_refresh_cart:
         return False
-    if not match.get("refresh_cart", True):
+    if not match.get("refresh_cart", False):
         return False
     if not result.get("ok"):
         return False
