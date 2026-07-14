@@ -12,3 +12,5 @@ tickets_found_*.png
 image.png
 
 .env
+
+resale_seat_monitor_state.json

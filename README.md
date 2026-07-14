@@ -27,6 +27,37 @@ https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/
 
 It does **not** bypass captcha, login, queue, payment, checkout, or FIFA account verification.
 
+
+## Resale Seat Monitor
+
+FIFA resale uses a different host and flow:
+
+```text
+https://fwc26-resale-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725358/contact-advantages/10229997366844,10230133312745/lang/en
+```
+
+Run it with:
+
+```bash
+./run_resale_seat_monitor.sh
+```
+
+This monitor reads FIFA's loaded seatmap API resources and alerts on concrete resale seats that match `resale_targets.json`.
+
+Default resale rule:
+
+```json
+{
+  "categories": ["Category 3", "Category 4", "Obstructed View Category"],
+  "max_price": 2000,
+  "include_accessible": false,
+  "auto_cart": false
+}
+```
+
+Resale auto-cart is disabled by default until the exact resale submit request is mapped. Use `resale_network_probe.user.js` to capture a manual resale add-to-cart flow once; after that, the monitor can be extended to submit the same request automatically. See `resale_seat_monitor.md`.
+
+
 ## Two Cart Flows
 
 There are two intentionally different cart behaviors:

@@ -1,0 +1,16 @@
+[
+  {
+    "match_id": "target-resale",
+    "name": "Resale target - England vs Argentina - Atlanta Stadium",
+    "performance_id": "10229226725358",
+    "url": "https://fwc26-resale-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725358/contact-advantages/10229997366844,10230133312745/lang/en",
+    "categories": [
+      "Category 3",
+      "Category 4",
+      "Obstructed View Category"
+    ],
+    "max_price": 2000,
+    "include_accessible": false,
+    "auto_cart": false
+  }
+]
