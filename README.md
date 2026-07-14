@@ -24,7 +24,7 @@ https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/
   - `Obstructed View Category`
 - When a target category appears, adds 1 matching ticket to the cart and leaves it there.
 - Plays a local alarm when target availability is detected.
-- Keeps the shop timer alive by opportunistically adding one available non-accessibility ticket, removing it from the cart, and returning to the match page.
+- Keeps the shop timer alive by opportunistically adding one available non-accessibility ticket, opening the cart/summary if needed, clearing it, and returning to the match page.
 
 It does **not** bypass captcha, login, queue, payment, checkout, or FIFA account verification.
 
@@ -38,7 +38,7 @@ There are two intentionally different cart behaviors:
 
 2. **Refresh keepalive**
 
-   Used only when no watched cheap category is available. The monitor adds any selectable non-accessibility ticket, removes it from the cart, and navigates back to the match page. If there is no selectable ticket, it logs the miss and keeps monitoring.
+   Used only when no watched cheap category is available. The monitor adds any selectable non-accessibility ticket, opens the cart/summary if needed, clears it, and navigates back to the match page. If there is no selectable ticket, it logs the miss and keeps monitoring.
 
 ## Quick Start
 
@@ -108,7 +108,7 @@ python3 main_ticket_monitor.py --interval 30
 Run with a custom refresh interval:
 
 ```bash
-python3 main_ticket_monitor.py --interval 30 --refresh-cart-interval 240
+python3 main_ticket_monitor.py --interval 30 --refresh-cart-interval 45
 ```
 
 Disable automatic refresh keepalive:

@@ -60,7 +60,7 @@ Normal `Category 1` and `Category 2` are intentionally ignored for target alerts
 
 ## Refresh keepalive
 
-The monitor also attempts an automatic cart refresh every 240 seconds by default.
+The monitor also attempts an automatic cart refresh every 45 seconds by default.
 
 This is deliberately different from target auto-cart:
 
@@ -68,10 +68,10 @@ This is deliberately different from target auto-cart:
 2. It only runs when no watched cheap category is currently available.
 3. It chooses one selectable non-accessibility ticket row.
 4. It adds 1 ticket to the cart.
-5. It removes that temporary ticket from the cart.
+5. It opens the cart if needed, clicks `CANCEL`, confirms `YES`, and clears that temporary ticket.
 6. It navigates back to the match page and keeps monitoring.
 
-If no ticket is available for refresh, it logs that and keeps monitoring. Neither target auto-cart nor refresh keepalive checks out or pays.
+If FIFA clears the temporary item immediately after Add to cart, that is treated as a successful refresh as long as the session remains active. If no ticket is available for refresh, it logs that and keeps monitoring. Neither target auto-cart nor refresh keepalive checks out or pays.
 
 Manual refresh is still available:
 
