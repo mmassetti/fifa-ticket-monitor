@@ -54,7 +54,7 @@ Run the monitor:
 ./run_main_monitor.sh
 ```
 
-If FIFA shows queue, captcha, login, or verification, complete it manually in the Chrome window. Leave the script running; it will reuse that same browser session.
+If FIFA shows queue, captcha, login, or verification, complete it manually in the Chrome window. Leave the script running; it will reuse that same browser session. During queue/captcha/login it avoids navigating or reloading the tab.
 
 ## Windows Setup
 

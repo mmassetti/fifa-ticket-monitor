@@ -18,7 +18,7 @@ Use this for the normal flow:
 ./run_main_monitor.sh
 ```
 
-It starts the Chrome debug profile if needed, opens the target match, waits for CDP, and then starts the monitor. If FIFA asks for queue/captcha/login, complete it in the Chrome window and leave the script running.
+It starts the Chrome debug profile if needed, opens the target match, waits for CDP, and then starts the monitor. If FIFA asks for queue/captcha/login, complete it in the Chrome window and leave the script running. During queue/captcha/login the monitor will reuse that same tab and avoid navigating or reloading it.
 
 ## Run manually
 

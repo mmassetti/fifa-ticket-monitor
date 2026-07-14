@@ -197,13 +197,44 @@ def activate_target(target_id):
         pass
 
 
+def is_fifa_human_gate_url(url):
+    lower = (url or "").lower()
+    return (
+        "auth.fifa.com" in lower
+        or "access.tickets.fifa.com" in lower
+        or "login" in lower
+        or "verification" in lower
+    )
+
+
+def is_fifa_ticketing_url(url):
+    lower = (url or "").lower()
+    return (
+        "fwc26-shop-usd.tickets.fifa.com" in lower
+        or "auth.fifa.com" in lower
+        or "access.tickets.fifa.com" in lower
+    )
+
+
 def find_or_open_target(match):
     performance_id = match.get("performance_id") or extract_performance_id(match["url"])
-    targets = get_targets()
+    targets = [target for target in get_targets() if target.get("type", "page") == "page"]
 
     for target in targets:
         target_url = target.get("url", "")
         if performance_id and performance_id in target_url:
+            activate_target(target.get("id"))
+            return target
+
+    for target in targets:
+        target_url = target.get("url", "")
+        if is_fifa_human_gate_url(target_url):
+            activate_target(target.get("id"))
+            return target
+
+    for target in targets:
+        target_url = target.get("url", "")
+        if is_fifa_ticketing_url(target_url):
             activate_target(target.get("id"))
             return target
 
@@ -859,15 +890,17 @@ def check_match(match):
         target_performance_id = extract_performance_id(match["url"])
         current_url = state.get("url") or ""
         on_target_page = target_performance_id and target_performance_id in current_url
-        on_auth_flow = "auth.fifa.com" in current_url.lower()
+        on_human_gate = is_fifa_human_gate_url(current_url)
 
-        if not on_target_page and not on_auth_flow:
+        if not on_target_page and not on_human_gate:
             navigate(tab, match["url"])
             time.sleep(3)
             state = read_page_state(tab)
-            on_auth_flow = "auth.fifa.com" in (state.get("url") or "").lower()
+            current_url = state.get("url") or ""
+            on_target_page = target_performance_id and target_performance_id in current_url
+            on_human_gate = is_fifa_human_gate_url(current_url)
 
-        if not on_auth_flow:
+        if on_target_page and not on_human_gate:
             reload_page(tab)
             time.sleep(random.uniform(1.5, 3.0))
             state = read_page_state(tab)
