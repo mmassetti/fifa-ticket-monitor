@@ -123,14 +123,24 @@ Keep the Chrome window open while the monitor runs.
 
 ## Telegram Alerts
 
-To receive Telegram alerts, reuse the same bot credentials from the other monitor:
+To receive Telegram alerts, reuse the same bot credentials from the other monitor.
+
+Recommended local setup:
 
 ```bash
-export TELEGRAM_BOT_TOKEN="123456789:replace_me"
-export TELEGRAM_CHAT_ID="123456789"
+cp .env.example .env
 ```
 
-Then start the monitor from that same terminal:
+Then edit `.env` and fill in:
+
+```bash
+TELEGRAM_BOT_TOKEN=123456789:replace_me
+TELEGRAM_CHAT_ID=959522546
+```
+
+`.env` is ignored by git, so the real token stays local.
+
+Then start the monitor:
 
 ```bash
 ./run_main_monitor.sh
@@ -145,11 +155,11 @@ When a watched category becomes available, the monitor sends one Telegram messag
 - auto-cart result
 - direct match URL
 
-On Windows PowerShell:
+On Windows PowerShell without `.env`:
 
 ```powershell
 $env:TELEGRAM_BOT_TOKEN="123456789:replace_me"
-$env:TELEGRAM_CHAT_ID="123456789"
+$env:TELEGRAM_CHAT_ID="959522546"
 python main_ticket_monitor.py
 ```
 

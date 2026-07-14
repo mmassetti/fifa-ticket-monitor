@@ -46,11 +46,17 @@ The monitor reads `main_matches.json`, extracts category rows from the live page
 
 ## Telegram alerts
 
-Set these environment variables before starting the monitor:
+Set Telegram credentials before starting the monitor. The easiest local setup is:
 
 ```bash
-export TELEGRAM_BOT_TOKEN="123456789:replace_me"
-export TELEGRAM_CHAT_ID="123456789"
+cp .env.example .env
+```
+
+Then edit `.env`:
+
+```bash
+TELEGRAM_BOT_TOKEN=123456789:replace_me
+TELEGRAM_CHAT_ID=959522546
 ```
 
 When a watched category first becomes available, the monitor sends one Telegram alert for that availability event. It does not send repeat messages while the same availability remains true.

@@ -9,6 +9,14 @@ CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 PROFILE_DIR="$HOME/.chrome-fifa-main-debug"
 INTERVAL="${INTERVAL:-30}"
 
+if [ -f ".env" ]; then
+  echo "[*] Loading .env"
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+fi
+
 echo "============================================================"
 echo "  FIFA 2026 ordinary-ticket monitor"
 echo "============================================================"

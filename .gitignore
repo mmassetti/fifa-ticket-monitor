@@ -10,3 +10,5 @@ api_inspection_match_*_summary.json
 
 tickets_found_*.png
 image.png
+
+.env
