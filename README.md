@@ -121,6 +121,40 @@ For a Windows machine with little technical setup, install these first:
 
 Keep the Chrome window open while the monitor runs.
 
+## Telegram Alerts
+
+To receive Telegram alerts, reuse the same bot credentials from the other monitor:
+
+```bash
+export TELEGRAM_BOT_TOKEN="123456789:replace_me"
+export TELEGRAM_CHAT_ID="123456789"
+```
+
+Then start the monitor from that same terminal:
+
+```bash
+./run_main_monitor.sh
+```
+
+When a watched category becomes available, the monitor sends one Telegram message with:
+
+- match name
+- matching ticket categories
+- price
+- max quantity
+- auto-cart result
+- direct match URL
+
+On Windows PowerShell:
+
+```powershell
+$env:TELEGRAM_BOT_TOKEN="123456789:replace_me"
+$env:TELEGRAM_CHAT_ID="123456789"
+python main_ticket_monitor.py
+```
+
+If these variables are missing, the monitor still works; it just skips Telegram.
+
 ## Configuration
 
 Edit `main_matches.json` to change the target match, watched categories, max price, auto-cart, or refresh behavior.

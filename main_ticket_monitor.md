@@ -44,6 +44,17 @@ python3 main_ticket_monitor.py --interval 30
 
 The monitor reads `main_matches.json`, extracts category rows from the live page, and alerts when a watched category has quantity above zero and price within the rule.
 
+## Telegram alerts
+
+Set these environment variables before starting the monitor:
+
+```bash
+export TELEGRAM_BOT_TOKEN="123456789:replace_me"
+export TELEGRAM_CHAT_ID="123456789"
+```
+
+When a watched category first becomes available, the monitor sends one Telegram alert for that availability event. It does not send repeat messages while the same availability remains true.
+
 ## Target auto-cart
 
 Auto-cart is enabled for the target match in `main_matches.json`.

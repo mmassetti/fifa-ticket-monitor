@@ -863,6 +863,69 @@ def summarize_categories(categories):
     return " | ".join(parts)
 
 
+def telegram_is_configured():
+    return bool(os.environ.get("TELEGRAM_BOT_TOKEN") and os.environ.get("TELEGRAM_CHAT_ID"))
+
+
+def send_telegram_message(text):
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        return {"ok": False, "reason": "telegram_not_configured"}
+
+    response = requests.post(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        json={
+            "chat_id": chat_id,
+            "text": text,
+            "disable_web_page_preview": False,
+        },
+        timeout=10,
+    )
+    try:
+        data = response.json()
+    except Exception:
+        data = {"ok": False, "description": response.text[:500]}
+    if not response.ok or not data.get("ok"):
+        return {
+            "ok": False,
+            "status_code": response.status_code,
+            "description": data.get("description", response.text[:500]),
+        }
+    return {"ok": True}
+
+
+def format_availability_message(match, result, cart_ok=None):
+    lines = [
+        "FIFA 2026 tickets available",
+        f"Match: {match.get('name', match.get('match_id'))}",
+        f"Health: {result.get('health')}",
+        "",
+        "Matches:",
+    ]
+    for category in sorted_cart_candidates(result):
+        price = f"${category['price']:,.2f}" if category.get("price") is not None else "no price"
+        lines.append(f"- {category.get('label')}: {price}, qty max {category.get('maxQuantity', 0)}")
+    if cart_ok is not None:
+        lines.extend(["", f"Auto-cart: {'OK' if cart_ok else 'FAILED'}"])
+    lines.extend(["", match.get("url", result.get("url", ""))])
+    return "\n".join(lines)
+
+
+def notify_telegram_availability(match, result, cart_ok=None):
+    if not telegram_is_configured():
+        return {"ok": False, "reason": "telegram_not_configured"}
+    try:
+        notification = send_telegram_message(format_availability_message(match, result, cart_ok))
+    except Exception as exc:
+        notification = {"ok": False, "reason": str(exc)}
+    if notification.get("ok"):
+        print("  TELEGRAM: sent availability alert")
+    else:
+        print(f"  TELEGRAM: failed -> {notification.get('reason') or notification.get('description')}")
+    return notification
+
+
 def play_alarm():
     print()
     print("!" * 72)
@@ -1002,12 +1065,15 @@ def main():
             write_json(STATE_FILE, state)
 
             if became_available:
-                cart_ok = False
+                cart_ok = None
                 if should_auto_cart(match):
                     cart_ok, cart_attempts = try_auto_cart(match, result)
                     state[match["match_id"]]["cart_attempts"] = cart_attempts
                     state[match["match_id"]]["cart_ok"] = cart_ok
                     write_json(STATE_FILE, state)
+                telegram_result = notify_telegram_availability(match, result, cart_ok)
+                state[match["match_id"]]["telegram_last_result"] = telegram_result
+                write_json(STATE_FILE, state)
                 play_alarm()
             elif should_attempt_cart_refresh(match, previous, args, result):
                 refresh_result = try_refresh_cart(match, result)
