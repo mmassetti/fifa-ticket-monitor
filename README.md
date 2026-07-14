@@ -56,6 +56,72 @@ Run the monitor:
 
 If FIFA shows queue, captcha, login, or verification, complete it manually in the Chrome window. Leave the script running; it will reuse that same browser session.
 
+## Windows Setup
+
+For a Windows machine with little technical setup, install these first:
+
+1. **Google Chrome**
+
+   Download and install the normal Chrome browser:
+
+   ```text
+   https://www.google.com/chrome/
+   ```
+
+2. **Python 3**
+
+   Download Python for Windows:
+
+   ```text
+   https://www.python.org/downloads/windows/
+   ```
+
+   During installation, check **Add Python to PATH**.
+
+3. **Git**
+
+   Download Git for Windows:
+
+   ```text
+   https://git-scm.com/download/win
+   ```
+
+4. **Clone this project**
+
+   Open **PowerShell** and run:
+
+   ```powershell
+   git clone https://github.com/mmassetti/fifa-ticket-monitor.git
+   cd fifa-ticket-monitor
+   python -m pip install -r requirements.txt
+   ```
+
+5. **Start Chrome with remote debugging**
+
+   In PowerShell, run:
+
+   ```powershell
+   & "C:\Program Files\Google\Chrome\Application\chrome.exe" `
+     --remote-debugging-port=9222 `
+     --user-data-dir="$env:USERPROFILE\.chrome-fifa-main-debug" `
+     --no-first-run `
+     --no-default-browser-check `
+     "https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725358/table/1/lang/en"
+   ```
+
+   If FIFA asks for queue, captcha, login, or verification, complete it manually in that Chrome window.
+
+6. **Start the monitor**
+
+   Open a second PowerShell window in the same project folder and run:
+
+   ```powershell
+   cd fifa-ticket-monitor
+   python main_ticket_monitor.py
+   ```
+
+Keep the Chrome window open while the monitor runs.
+
 ## Configuration
 
 Edit `main_matches.json` to change the target match, watched categories, max price, auto-cart, or refresh behavior.
