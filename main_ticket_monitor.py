@@ -378,6 +378,7 @@ def category_priority(category):
         "Category 3": 30,
         "Obstructed View Category 2": 40,
         "Obstructed View Category 1": 50,
+        "Category 2": 60,
     }
     return priority.get(label, 100)
 
