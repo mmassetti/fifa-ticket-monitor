@@ -6,10 +6,10 @@ This project attaches to a real Chrome session through Chrome DevTools Protocol 
 
 ## Current Target
 
-The default config watches this match page:
+The default config now watches the World Cup Final:
 
 ```text
-https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725358/table/1/lang/en
+https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725360/table/1/lang/en
 ```
 
 ## What It Does
@@ -137,7 +137,7 @@ For a Windows machine with little technical setup, install these first:
      --user-data-dir="$env:USERPROFILE\.chrome-fifa-main-debug" `
      --no-first-run `
      --no-default-browser-check `
-     "https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725358/table/1/lang/en"
+     "https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725360/table/1/lang/en"
    ```
 
    If FIFA asks for queue, captcha, login, or verification, complete it manually in that Chrome window.
@@ -199,14 +199,14 @@ If these variables are missing, the monitor still works; it just skips Telegram.
 
 ## Configuration
 
-Edit `main_matches.json` to change the target match, watched categories, max price, auto-cart, or refresh behavior.
+Edit `main_matches.json` to change the target match, watched categories, max price, auto-cart, or refresh behavior. The current ordinary-ticket target is the final at MetLife Stadium.
 
 Default rule:
 
 ```json
 {
   "categories": ["Category 2", "Category 3", "Category 4", "Obstructed View Category"],
-  "max_price": 3000,
+  "max_price": 8000,
   "auto_cart": true,
   "refresh_cart": false
 }

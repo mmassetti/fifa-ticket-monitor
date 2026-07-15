@@ -1,11 +1,11 @@
 # Main Ticket Monitor
 
-This monitor watches ordinary FIFA World Cup 2026 ticket pages, focused on a direct match page instead of hospitality or the old match-list page.
+This monitor watches ordinary FIFA World Cup 2026 ticket pages, focused on a direct match page instead of hospitality or the old match-list page. The current target is the final.
 
 Current target:
 
 ```text
-https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725358/table/1/lang/en
+https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725360/table/1/lang/en
 ```
 
 The monitor attaches to a real Chrome session through CDP. This keeps captcha, queue, login, and verification-code steps human-driven.
@@ -74,7 +74,7 @@ Current watched categories are:
 - `Category 4`
 - `Obstructed View Category`
 
-Normal `Category 1` is intentionally ignored for target alerts because it is too expensive. `Category 2` is watched up to the configured max price. Accessibility rows such as `Easy Access` and `Wheelchair` are also ignored unless explicitly added to the config.
+Normal `Category 1` is intentionally ignored for target alerts because it is too expensive. `Category 2` is watched up to the configured final max price. Accessibility rows such as `Easy Access` and `Wheelchair` are also ignored unless explicitly added to the config.
 
 ## Refresh keepalive
 

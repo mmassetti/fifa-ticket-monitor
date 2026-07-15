@@ -2,7 +2,7 @@
 # Launch Chrome with remote debugging enabled on the ordinary-ticket target match.
 # IMPORTANT: Close ALL Chrome windows before running this.
 
-TARGET_URL="https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725358/table/1/lang/en"
+TARGET_URL="https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725360/table/1/lang/en"
 
 echo "============================================================"
 echo "  Starting Chrome with Remote Debugging (port 9222)"

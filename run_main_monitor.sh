@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-TARGET_URL="https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725358/table/1/lang/en"
+TARGET_URL="https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/10229226725360/table/1/lang/en"
 CDP_URL="http://127.0.0.1:9222/json/version"
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 PROFILE_DIR="$HOME/.chrome-fifa-main-debug"
