@@ -69,12 +69,11 @@ When a watched cheap category appears, the monitor attempts to add 1 ticket to t
 
 Current watched categories are:
 
-- `Category 2`
 - `Category 3`
 - `Category 4`
 - `Obstructed View Category`
 
-Normal `Category 1` is intentionally ignored for target alerts because it is too expensive. `Category 2` is watched up to the configured final max price. Accessibility rows such as `Easy Access` and `Wheelchair` are also ignored unless explicitly added to the config.
+Normal `Category 1` and normal `Category 2` are intentionally ignored for target alerts for now. Accessibility rows such as `Easy Access` and `Wheelchair` are also ignored unless explicitly added to the config.
 
 ## Refresh keepalive
 

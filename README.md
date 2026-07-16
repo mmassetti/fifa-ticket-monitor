@@ -19,7 +19,6 @@ https://fwc26-shop-usd.tickets.fifa.com/secure/selection/event/seat/performance/
 - Detects ticket category availability and prices.
 - Ignores expensive normal `Category 1` tickets for the target alert.
 - Watches target categories:
-  - `Category 2`
   - `Category 3`
   - `Category 4`
   - `Obstructed View Category`
@@ -205,8 +204,8 @@ Default rule:
 
 ```json
 {
-  "categories": ["Category 2", "Category 3", "Category 4", "Obstructed View Category"],
-  "max_price": 8000,
+  "categories": ["Category 3", "Category 4", "Obstructed View Category"],
+  "max_price": 6000,
   "auto_cart": true,
   "refresh_cart": false
 }
@@ -219,7 +218,6 @@ Target auto-cart priority is:
 3. `Category 3`
 4. `Obstructed View Category 2`
 5. `Obstructed View Category 1`
-6. `Category 2`
 
 Refresh keepalive priority, only if re-enabled, is:
 
